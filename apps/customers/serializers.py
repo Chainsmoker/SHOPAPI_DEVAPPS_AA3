@@ -2,6 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import make_password
+
 from .models import Address, Cart
 from .errors import Error
 
@@ -25,6 +27,13 @@ class CustomerSerializer(serializers.ModelSerializer):
                 'message': Error.TOO_SHORT['message']
             })
         return value
+    
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        instance = super().create(validated_data)
+        instance.set_password(password)  
+        instance.save()
+        return instance
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
